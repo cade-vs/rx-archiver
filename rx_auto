@@ -1,0 +1,23 @@
+#!/usr/bin/perl
+#
+# $id$
+#
+
+$_ =  $ARGV[1];
+
+   if ( /\.tar\.gz$/i )  { $rx = "rx_tar"; }
+elsif ( /\.tar\.Z$/i )   { $rx = "rx_tar"; }
+elsif ( /\.tar$/i )      { $rx = "rx_tar"; }
+elsif ( /\.tgz$/i )      { $rx = "rx_tar"; }
+elsif ( /\.tar\.bz2$/i ) { $rx = "rx_tar"; }
+
+elsif ( /\.zip$/i )      { $rx = "rx_zip"; }
+
+elsif ( /\.deb$/i )      { $rx = "rx_deb"; }
+
+elsif ( /\.ftp$/i )      { $rx = "rx_ftp"; }
+
+# print $rx . " " . join(" ",@ARGV) . "\n";
+system( $rx . " " . join(" ",@ARGV) );
+
+

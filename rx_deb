@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+#
+# $id$
+#
+# rx_deb v archive directory
+# rx_deb x archive files...
+# rx_deb x archive @listfile
+#
+
+$command = shift @ARGV;
+$archive = shift @ARGV;
+
+if ( $command eq "v" )
+   {
+   $dir = shift @ARGV;
+   if ( $dir ) { $dir .= "/" unless $dir =~ /\/$/; }
+
+   if ( $dir eq "DATA/" )
+     {
+     open( i, "ar p $archive data.tar.gz | gzip -dc | tar tvf - |");
+     while(<i>)
+       {
+       chop;
+       s/\s+->\s+\S+$//;
+       if (/^(.[\-rwxsStT]{9})\s+\S+\s+(\d+)\s+(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)(:\d\d)?\s+(\S+[^\/])$/)
+         {
+         print "NAME:$8\nSIZE:$2\nMODE:$1\nTIME:$3$4$5$6$7\n\n";
+         }
+       }
+     close( i );
+     }
+   else
+     {
+     # these are standard ones
+     print "NAME:control\n\nNAME:debian-binary\n\nNAME:DATA/\n\n";
+     # FIXME: here should take ar list and get files' sizes etc...
+     }
+   } # view command ends here
+elsif ( $command eq "x" )
+   {
+   if ( $ARGV[0] eq "control" )
+      {
+      system( "ar p $archive control.tar.gz | gzip -d | tar xvf - control" );
+      }
+    elsif ( $ARGV[0] eq "debian-binary" )
+      {
+      system( "ar p $archive debian-binary > debian-binary" );
+      }
+    else
+      {
+      if ( $ARGV[0] =~ /^\@(.+)$/ )
+        {
+        $listfile = $1;
+        }
+      else
+        {
+        $listfile = "/tmp/rx_tar.list." . $$;
+        open( o, ">$listfile" );
+        while( $_ = shift @ARGV )
+          {
+          s/^DATA\///;
+          print o "$_\n";
+          }
+        close( o );
+        }
+      system( "mkdir -p DATA; cd DATA; ar p $archive data.tar.gz | gzip -d | tar xvf - -T $listfile" );
+      unlink $listfile;
+      }
+   }

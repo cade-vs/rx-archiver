@@ -1,0 +1,69 @@
+#!/usr/bin/perl
+#
+# $id$
+#
+# rx_tar v archive directory
+# rx_tar V archive directory
+# rx_tar x archive files...
+# rx_tar x archive @listfile
+#
+
+$command = shift @ARGV;
+$archive = shift @ARGV;
+
+if ( $command eq "v" || $command eq "V" )
+   {
+   $dir = shift @ARGV;
+   if ( $dir ) { $dir .= "/" unless $dir =~ /\/$/; }
+ 
+   open( i, "unzip -l $archive |" );
+
+   if ( $command eq "V" )
+     {
+     $rex = "\\s*(\\d+)\\s+(\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d)\\s+(\\S+[^\\/])";
+     }
+   else
+     {
+     $rex = "\\s*(\\d+)\\s+(\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d)\\s+$dir([^\\/]+\\/?)";
+     }
+
+   while(<i>)
+      {
+      chop;
+      if (/^$rex$/)
+        {
+        if ( $4 > 70 )
+          { $yp = "19" }
+        else
+          { $yp = "20" }
+        print "NAME:$7\nSIZE:$1\nTIME:$yp$4$2$3$5$6\n\n";
+        }
+      }
+
+   close( i );
+   }
+elsif ( $command eq "x" )
+  {
+  if ( $ARGV[0] =~ /^\@(.+)$/ )
+    {
+    $listfile = $1;
+    }
+  else
+    {
+    $listfile = "/tmp/rx_tar.list." . $$;
+    open( o, ">$listfile" );
+    while( $_ = shift @ARGV )
+      {
+      print o "$_\n";
+      }
+    close( o );
+    }
+ 
+  system( "unzip $archive `cat $listfile`" );
+  unlink $listfile;
+  }
+else
+  {
+  die $0 . ": wrong command.\n";
+  }
+

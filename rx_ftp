@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+#
+# $id$
+#
+# rx_ftp v archive directory
+# rx_ftp V archive directory
+# rx_ftp x archive files...
+# rx_ftp x archive @listfile
+#
+#
+
+$command = shift @ARGV;
+$archive = shift @ARGV;
+
+if ( $command eq "v" || $command eq "V" )
+   {
+   $dir = shift @ARGV;
+   if ( $dir ) { $dir .= "/" unless $dir =~ /\/$/; }
+ 
+   open( i, "ftparc -l -r -q $archive      |" ) if $command eq "V";
+   open( i, "ftparc -l    -q $archive $dir |" ) if $command eq "v";
+
+   if ( $command eq "V" )
+     {
+     $rex = "(.[\\-rwxsStT]{9})\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\d+)\\s+............\\s+(\\S+[^\\/])";
+     }
+   else
+     {
+     $rex = "(.[\\-rwxsStT]{9})\\s+\\S+\\s+\\S+\\s+\\S+\\s+(\\d+)\\s+............\\s+(\\S+)";
+     }
+
+   $count = 0;
+   while(<i>)
+      {
+      chop;
+      s/\s+->\s+\S+$//;
+      if (/^$rex$/)
+        {
+        print "NAME:$3\nSIZE:$2\nMODE:$1\n\n";
+        $count++;
+        }
+      }
+
+   close( i );
+   }
+elsif ( $command eq "x" )
+  {
+  system( "ftparc -x -q $archive $ARGV[0]" );
+  }
+else
+  {
+  die $0 . ": wrong command.\n";
+  }
+

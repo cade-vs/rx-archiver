@@ -1,0 +1,96 @@
+#!/usr/bin/perl
+#
+# $id$
+#
+# rx_tar v archive directory
+# rx_tar V archive directory
+# rx_tar x archive files...
+# rx_tar x archive @listfile
+#
+# FIXME: browsing through the tar archive structure takes same
+# time for each directory list as list of all archive contents!
+# perhaps there should be some kind of cache or something...
+#
+
+$command = shift @ARGV;
+$archive = shift @ARGV;
+
+if ( $command eq "v" || $command eq "V" )
+   {
+   $dir = shift @ARGV;
+   if ( $dir ) { $dir .= "/" unless $dir =~ /\/$/; }
+ 
+   open( i, "tar xvf   $archive             |" ) if $archive =~ /\.tar$/i;
+   open( i, "gzip  -dc $archive | tar tvf - |" ) if $archive =~ /\.tar\.Z$/i;
+   open( i, "gzip  -dc $archive | tar tvf - |" ) if $archive =~ /\.tar\.gz$/i;
+   open( i, "gzip  -dc $archive | tar tvf - |" ) if $archive =~ /\.tgz$/i;
+   open( i, "bzip2 -dc $archive | tar tvf - |" ) if $archive =~ /\.tar\.bz2$/i;
+
+   if ( $command eq "V" )
+     {
+     $rex = "(.[\\-rwxsStT]{9})\\s+\\S+\\s+(\\d+)\\s+(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d)(:\\d\\d)?\\s+(\\S+[^\\/])";
+     }
+   else
+     {
+     $rex = "(.[\\-rwxsStT]{9})\\s+\\S+\\s+(\\d+)\\s+(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d)(:\\d\\d)?\\s+$dir([^\\/]+\\/?)";
+     }
+
+   $count = 0;
+   while(<i>)
+      {
+      chop;
+      s/\s+->\s+\S+$//;
+      if (/^$rex$/)
+        {
+        print "NAME:$9\nSIZE:$2\nMODE:$1\nTIME:$3$4$5$6$7\n\n";
+        $count++;
+        }
+      }
+
+   close( i );
+ 
+   if ( $command eq "v" && $count == 0 )
+     {
+     #
+     # this is a hack! there is no (really) way to handle in
+     # standard way all tar files. the reason is that tar puts
+     # filenames as they are given on the command line so for
+     # example:
+     # `tar cf arc.tgz somedir' and `tar cf arc.tar somedir/*'
+     # are same meaning but second one does not contain `root'
+     # directory `somedir', second example is:
+     # `tar cf arc.tar *' and `tar cf arc.tar ./*' ... sorry :)
+     # If someone solve this problem I'll be happy to be notified.
+     # Thanx!
+     #
+     system( "$0 V $archive" );
+     }
+   }
+elsif ( $command eq "x" )
+  {
+  if ( $ARGV[0] =~ /^\@(.+)$/ )
+    {
+    $listfile = $1;
+    }
+  else
+    {
+    $listfile = "/tmp/rx_tar.list." . $$;
+    open( o, ">$listfile" );
+    while( $_ = shift @ARGV )
+      {
+      print o "$_\n";
+      }
+    close( o );
+    }
+  system( "tar xvf   $archive             -T $listfile" ) if $archive =~ /\.tar$/i;
+  system( "gzip  -dc $archive | tar xvf - -T $listfile" ) if $archive =~ /\.tar\.Z$/i;
+  system( "gzip  -dc $archive | tar xvf - -T $listfile" ) if $archive =~ /\.tar\.gz$/i;
+  system( "gzip  -dc $archive | tar xvf - -T $listfile" ) if $archive =~ /\.tgz$/i;
+  system( "bzip2 -dc $archive | tar xvf - -T $listfile" ) if $archive =~ /\.tar\.bz2$/i;
+  unlink $listfile;
+  }
+else
+  {
+  die $0 . ": wrong command.\n";
+  }
+
