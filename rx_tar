@@ -12,20 +12,42 @@
 # perhaps there should be some kind of cache or something...
 #
 
+$timeout = 10; # seconds
+
 $command = shift @ARGV;
 $archive = shift @ARGV;
+
+$cache = "/tmp/$archive.tar.cache";
+
+for( glob "/tmp/*.tar.cache" )
+  {
+  # clean cache--silently skip errors
+  next unless time() - file_mtime( $_ ) > $timeout;
+  unlink $_;
+  }
 
 if ( $command eq "v" || $command eq "V" )
    {
    $dir = shift @ARGV;
    if ( $dir ) { $dir .= "/" unless $dir =~ /\/$/; }
  
-   open( i, "tar xvf   $archive             |" ) if $archive =~ /\.tar$/i;
-   open( i, "gzip  -dc $archive | tar tvf - |" ) if $archive =~ /\.tar\.Z$/i;
-   open( i, "gzip  -dc $archive | tar tvf - |" ) if $archive =~ /\.tar\.gz$/i;
-   open( i, "gzip  -dc $archive | tar tvf - |" ) if $archive =~ /\.tgz$/i;
-   open( i, "bzip2 -dc $archive | tar tvf - |" ) if $archive =~ /\.tar\.bz2$/i;
-
+   if( ! -e $cache )
+     {
+     # cache not found--fill it
+     system( "tar xvf   $archive             > $cache" ) if $archive =~ /\.tar$/i;
+     system( "gzip  -dc $archive | tar tvf - > $cache" ) if $archive =~ /\.tar\.Z$/i;
+     system( "gzip  -dc $archive | tar tvf - > $cache" ) if $archive =~ /\.tar\.gz$/i;
+     system( "gzip  -dc $archive | tar tvf - > $cache" ) if $archive =~ /\.tgz$/i;
+     system( "bzip2 -dc $archive | tar tvf - > $cache" ) if $archive =~ /\.tar\.bz2$/i;
+     chmod 0600, $cache;
+     }
+   else
+     {
+     utime time(), time(), $cache;
+     }  
+   
+   open( i, $cache );
+   
    if ( $command eq "V" )
      {
      $rex = "(.[\\-rwxsStT]{9})\\s+\\S+\\s+(\\d+)\\s+(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d)(:\\d\\d)?\\s+(\\S+[^\\/])";
@@ -94,3 +116,8 @@ else
   die $0 . ": wrong command.\n";
   }
 
+
+sub file_mtime
+{
+  return (stat($_[0]))[9];
+}
