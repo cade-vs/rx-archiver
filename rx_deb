@@ -24,7 +24,7 @@ if ( $command eq "v" )
        s/\s+->\s+\S+$//;
        if (/^(.[\-rwxsStT]{9})\s+\S+\s+(\d+)\s+(\d\d\d\d)-(\d\d)-(\d\d) (\d\d):(\d\d)(:\d\d)?\s+(\S+[^\/])$/)
          {
-         print "NAME:$8\nSIZE:$2\nMODE:$1\nTIME:$3$4$5$6$7\n\n";
+         print "NAME:$9\nSIZE:$2\nMODE:$1\nTIME:$3$4$5$6$7\n\n";
          }
        }
      close( i );
