@@ -1,66 +1,80 @@
 #!/usr/bin/perl
+#############################################################################
 #
-# $id$
+# rx_* dispatcher and handlers for VFU File Manager
+# (c) Vladi Belperchinov-Shabanski "Cade" 2002 
+# <cade@biscom.net> <cade.datamax.bg> http://cade.webbg.com
+# $Id: rx_zip,v 1.2 2002/11/06 20:24:26 cade Exp $
 #
-# rx_tar v archive directory
-# rx_tar V archive directory
-# rx_tar x archive files...
-# rx_tar x archive @listfile
+# usage:
+#   rx_* l archive directory   # list archive directory 
+#   rx_* v archive             # list entire archive
+#   rx_* x archive files...    # extract one file
+#   rx_* x archive @listfile   # extract list of files
 #
+#############################################################################
+use strict;
 
-$command = shift @ARGV;
-$archive = shift @ARGV;
+my $cmd = lc shift @ARGV;
+my $archive = shift @ARGV;
+my $cache = "/tmp/$archive.rx.cache";
 
-if ( $command eq "v" || $command eq "V" )
+if ( $cmd eq "l" || $cmd eq "v" )
    {
-   $dir = shift @ARGV;
+   my $dir = shift @ARGV;
    if ( $dir ) { $dir .= "/" unless $dir =~ /\/$/; }
  
-   open( i, "unzip -l $archive |" );
-
-   if ( $command eq "V" )
+   
+   if( ! -e $cache )
      {
-     $rex = "\\s*(\\d+)\\s+(\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d)\\s+(\\S+[^\\/])";
+     # cache not found--fill it
+     system( "unzip -l \"$archive\" > \"$cache\"" );
+     chmod oct(600), $cache; # a bit late but still... :)
      }
    else
      {
-     $rex = "\\s*(\\d+)\\s+(\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d)\\s+$dir([^\\/]+\\/?)";
-     }
-
+     utime time(), time(), $cache; # update last modification time of the cache
+     }  
+   my $in = 0;
+   open( i, $cache );
    while(<i>)
       {
+      $in = ! $in and next if/^[\- ]{16,}$/;
+      next unless $in;
       chop;
-      if (/^$rex$/)
+      s/\s+->\s+\S+$//; # no symlinks support?
+      my @D = split /\s+/; 
+      my $N = $D[4]; # name
+      if ( $cmd eq "l" )
         {
-        if ( $4 > 70 )
-          { $yp = "19" }
-        else
-          { $yp = "20" }
-        print "NAME:$7\nSIZE:$1\nTIME:$yp$4$2$3$5$6\n\n";
+        next unless $N =~ s/^$dir([^\/]+\/?)$//;
+        $N = $1;
         }
+      my $S = $D[1];
+      my $T = $D[2] . $D[3];
+      $T =~ s/(\d\d)-(\d\d)-(\d\d)(\d\d):(\d\d)/$3$2$1$4$5/;
+      $T = ( $3 < 70 ? '20' : '19' ) . $T;
+      print "NAME:$N\nSIZE:$S\nTIME:$T\n\n";
       }
-
    close( i );
    }
-elsif ( $command eq "x" )
+elsif ( $cmd eq "x" )
   {
+  my $list;
   if ( $ARGV[0] =~ /^\@(.+)$/ )
     {
-    $listfile = $1;
+    $list = $1;
     }
   else
     {
-    $listfile = "/tmp/rx_tar.list." . $$;
-    open( o, ">$listfile" );
-    while( $_ = shift @ARGV )
-      {
-      print o "$_\n";
-      }
+    $list = "/tmp/$$.rx.list";
+    open( o, ">$list" );
+    chmod oct(600), $list;
+    print o "$_\n" for @ARGV;
     close( o );
     }
- 
-  system( "unzip $archive `cat $listfile`" );
-  unlink $listfile;
+  system( "unzip $archive `cat $list` 1> /dev/null 2> /dev/null" );
+  unlink $list;
   }
 else
   {

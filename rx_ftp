@@ -1,13 +1,18 @@
 #!/usr/bin/perl
+#############################################################################
 #
-# $id$
+# rx_* dispatcher and handlers for VFU File Manager
+# (c) Vladi Belperchinov-Shabanski "Cade" 2002 
+# <cade@biscom.net> <cade.datamax.bg> http://cade.webbg.com
+# $Id: rx_ftp,v 1.2 2002/11/06 20:24:26 cade Exp $
 #
-# rx_ftp v archive directory
-# rx_ftp V archive directory
-# rx_ftp x archive files...
-# rx_ftp x archive @listfile
+# usage:
+#   rx_* l archive directory   # list archive directory 
+#   rx_* v archive             # list entire archive
+#   rx_* x archive files...    # extract one file
+#   rx_* x archive @listfile   # extract list of files
 #
-#
+#############################################################################
 
 $command = shift @ARGV;
 $archive = shift @ARGV;
