@@ -1,9 +1,9 @@
 #!/usr/bin/perl
 #############################################################################
 #
-# rx_rpm handlers for VFU File Manager
+# rx_rpm handler for VFU File Manager
 # (c) Ralph Muller <rmue@gmx.de> 2005
-# $Id: rx_rpm,v 1.1 2005/06/15 23:50:05 cade Exp $
+# $Id: rx_rpm,v 1.2 2005/06/16 00:07:38 cade Exp $
 #
 # usage:
 #   rx_* l archive directory   # list archive directory 
@@ -36,8 +36,8 @@ if ( $cmd eq "l" || $cmd eq "v" )
      utime time(), time(), $cache; # update last modification time of the cache
      }  
    my $in = 0;
-   open( i, $cache );
-   while(<i>)
+   open( my $i, $cache );
+   while(<$i>)
       {
 #      $in = ! $in and next if/^[\- ]{16,}$/;           # FixMe
 #      next unless $in;
@@ -45,11 +45,11 @@ if ( $cmd eq "l" || $cmd eq "v" )
       s/\s+->\s+\S+$//; # no symlinks support?
       my @D = split /\s+/; 
       my $N = $D[8]; # name
-      if ( $cmd eq "l" )
-        {
+#      if ( $cmd eq "l" )
+#        {
 #        next unless $N =~ s/^$dir([^\/]+\/?)$//;      # FixMe
 #        $N = $1;
-        }
+#        }
       my $S = $D[4];
 #      my $T = $D[5] . " " . $D[6] . " " . $D[7];             # FixMe
 #      $T =~ s/(\d\d)-(\d\d)-(\d\d)(\d\d):(\d\d)/$3$2$1$4$5/;
@@ -57,7 +57,7 @@ if ( $cmd eq "l" || $cmd eq "v" )
 #      print "NAME:$N\nSIZE:$S\nTIME:$T\n\n";
       print "NAME:$N\nSIZE:$S\n\n";
       }
-   close( i );
+   close( $i );
    }
 elsif ( $cmd eq "x" )
   {
