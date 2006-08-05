@@ -4,7 +4,7 @@
 # rx_* dispatcher and handlers for VFU File Manager
 # (c) Vladi Belperchinov-Shabanski "Cade" 2002 
 # <cade@biscom.net> <cade.datamax.bg> http://cade.webbg.com
-# $Id: rx_auto,v 1.4 2005/06/15 23:50:05 cade Exp $
+# $Id: rx_auto,v 1.5 2006/08/05 20:15:40 cade Exp $
 #
 # usage:
 #   rx_* l archive directory   # list archive directory 
@@ -33,16 +33,8 @@ exec( $rx, @ARGV );
 sub choose
 {
   local $_ = shift;
-  return "rx_tar" if /\.tar\.gz$/i;
-  return "rx_tar" if /\.tar\.z$/i;
-  return "rx_tar" if /\.tar$/i;
-  return "rx_tar" if /\.tgz$/i;
-  return "rx_tar" if /\.tar\.bz2$/i;
-  return "rx_zip" if /\.zip$/i;
-  return "rx_zip" if /\.pk3$/i;
-  return "rx_zip" if /\.maff$/i;
-  return "rx_zip" if /\.jar$/i;
-  return "rx_zip" if /\.jar$/i;
+  return "rx_tar" if /\.(?:tar(?:\.(?:z|gz|bz2))?|t[bg]z)$/i;
+  return "rx_zip" if /\.(?:zip|jar|pk3|egg|maff)$/i;
   return "rx_deb" if /\.deb$/i;
   return "rx_ftp" if /\.ftp$/i;
   return "rx_rar" if /\.rar$/i;
