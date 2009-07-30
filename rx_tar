@@ -2,12 +2,12 @@
 #############################################################################
 #
 # rx_* dispatcher and handlers for VFU File Manager
-# (c) Vladi Belperchinov-Shabanski "Cade" 2002 
+# (c) Vladi Belperchinov-Shabanski "Cade" 2002
 # <cade@biscom.net> <cade.datamax.bg> http://cade.webbg.com
 # $Id: rx_tar,v 1.4 2002/11/07 23:22:21 cade Exp $
 #
 # usage:
-#   rx_* l archive directory   # list archive directory 
+#   rx_* l archive directory   # list archive directory
 #   rx_* v archive             # list entire archive
 #   rx_* x archive files...    # extract one file
 #   rx_* x archive @listfile   # extract list of files
@@ -24,27 +24,28 @@ if ( $cmd eq "l" || $cmd eq "v" )
    {
    my $dir = shift @ARGV;
    if ( $dir ) { $dir .= "/" unless $dir =~ /\/$/; }
- 
+
    if( ! -e $cache )
      {
      # cache not found--fill it
      system( "tar xvf   \"$archive\"             > \"$cache\"" ) if $archive =~ /\.tar$/i;
      system( "gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tar\.g?z(\.rx\.cache)?$/i;
      system( "gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tgz$/i;
+     system( "xz    -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.txz$/i;
      system( "bzip2 -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tar\.bz2?$/i;
      chmod oct(600), $cache; # a bit late but still... :)
      }
    else
      {
      utime time(), time(), $cache; # update last modification time of the cache
-     }  
-   
+     }
+
    open( i, $cache );
    while(<i>)
       {
       chop;
       s/\s+->\s+\S+$//; # no symlinks support?
-      my @D = split /\s+/; 
+      my @D = split /\s+/;
       my $N = $D[5]; # name
       $N =~ s/^\.\///;
       $N =~ s/^\//\//;
@@ -78,6 +79,7 @@ elsif ( $cmd eq "x" )
   system( "tar xvf   $archive             -T $list" ) if $archive =~ /\.tar$/i;
   system( "gzip  -dc $archive | tar xvf - -T $list" ) if $archive =~ /\.tar\.g?z(\.rx\.cache)?$/i;
   system( "gzip  -dc $archive | tar xvf - -T $list" ) if $archive =~ /\.tgz$/i;
+  system( "xz    -dc $archive | tar xvf - -T $list" ) if $archive =~ /\.txz$/i;
   system( "bzip2 -dc $archive | tar xvf - -T $list" ) if $archive =~ /\.tar\.bz2?$/i;
   unlink $list;
   print "gzip  -dc $archive | tar xvf - -T $list";

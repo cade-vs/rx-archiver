@@ -2,12 +2,12 @@
 #############################################################################
 #
 # rx_* dispatcher and handlers for VFU File Manager
-# (c) Vladi Belperchinov-Shabanski "Cade" 2002 
+# (c) Vladi Belperchinov-Shabanski "Cade" 2002
 # <cade@biscom.net> <cade.datamax.bg> http://cade.webbg.com
 # $Id: rx_auto,v 1.5 2006/08/05 20:15:40 cade Exp $
 #
 # usage:
-#   rx_* l archive directory   # list archive directory 
+#   rx_* l archive directory   # list archive directory
 #   rx_* v archive             # list entire archive
 #   rx_* x archive files...    # extract one file
 #   rx_* x archive @listfile   # extract list of files
@@ -33,7 +33,7 @@ exec( $rx, @ARGV );
 sub choose
 {
   local $_ = shift;
-  return "rx_tar" if /\.(?:tar(?:\.(?:z|gz|bz2))?|t[bg]z)$/i;
+  return "rx_tar" if /\.(?:tar(?:\.(?:z|gz|bz2))?|t[bgx]z)$/i;
   return "rx_zip" if /\.(?:zip|jar|pk3|egg|maff)$/i;
   return "rx_deb" if /\.deb$/i;
   return "rx_ftp" if /\.ftp$/i;
