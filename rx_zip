@@ -27,7 +27,7 @@ if ( $cmd eq "l" || $cmd eq "v" )
    if( ! -e $cache )
      {
      # cache not found--fill it
-     system( 'unzip', '-l',  $archive, '>', $cache );
+     system( "unzip -l '$archive' > '$cache'" );
      chmod oct(600), $cache; # a bit late but still... :)
      }
    else
