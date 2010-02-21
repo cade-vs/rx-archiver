@@ -40,8 +40,8 @@ if ( $cmd eq "l" || $cmd eq "v" )
      }
 
    my $content = read_archive( $cache );
-#   use Data::Dumper;
-#   print Dumper( $content );
+   use Data::Dumper;
+   print Dumper( $content );
 
     if ( $cmd eq "l" )
       {
@@ -106,6 +106,7 @@ sub read_archive
     # strip leading /s
     $N =~ s/^\.\///;
     $N =~ s/^\//\//;
+    $N =~ s/\/$//;
 
 
     my $F = $N; # full name, before path split
