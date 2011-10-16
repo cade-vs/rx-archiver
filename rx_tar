@@ -27,7 +27,7 @@ if ( $cmd eq "l" || $cmd eq "v" )
    if( ! -e $cache )
      {
      # cache not found--fill it
-     system( "tar xvf   \"$archive\"             > \"$cache\"" ) if $archive =~ /\.tar$/i;
+     system( "tar tvf   \"$archive\"             > \"$cache\"" ) if $archive =~ /\.tar$/i;
      system( "gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tar\.g?z(\.rx\.cache)?$/i;
      system( "gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tgz$/i;
      system( "xz    -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.txz$/i;
