@@ -28,12 +28,12 @@ for( glob "/tmp/*.rx.cache" )
 
 my $rx = choose( $file ) or die "$0: this file type is not nown to me, sorry\n";
 
-exec( $rx, @ARGV );
+exec( '/usr/libexec/vfu/'.$rx, @ARGV );
 
 sub choose
 {
   local $_ = shift;
-  return "rx_tar" if /\.(?:tar(?:\.(?:z|gz|bz2))?|t[bgx]z)$/i;
+  return "rx_tar" if /\.(?:tar(?:\.(?:z|gz|xz|bz2))?|t[bgx]z)$/i;
   return "rx_zip" if /\.(?:zip|jar|pk3|egg|maff)$/i;
   return "rx_deb" if /\.deb$/i;
   return "rx_ftp" if /\.ftp$/i;

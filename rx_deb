@@ -17,24 +17,28 @@ use strict;
 
 my $cmd = lc shift @ARGV;
 my $archive = shift @ARGV;
-my $cache = "$archive.data.tar.gz.rx.cache";
+my $ac=`ar t "$archive"`;
+my $at='gz';
+if( index( $ac, 'data.tar.xz' ) != -1 )
+  {
+  $at='xz';
+  }
+my $cache = "$archive.data.tar.$at.rx.cache";
 $cache =~ s/^(.+)\/([^\/]+)$/$2/;
 
-if ( $cmd eq "l" || $cmd eq "v" || $cmd eq "x" )
+if( $cmd eq "l" || $cmd eq "v" || $cmd eq "x" )
    {
    if( ! -e "/tmp/$cache" )
      {
      # cache not found--fill it
-     system( qq[ ar p "$archive" data.tar.gz > "/tmp/$cache\" ] );
-     chmod oct(600), "/tmp/$cache"; # a bit late but still... :)
+     system( qq[ umask 0077 ; ar p "$archive" data.tar.$at > "/tmp/$cache\" ] );
      }
    else
      {
      utime time(), time(), "/tmp/$cache"; # update last modification time of the cache
      }
-
   chdir( "/tmp" );
-  system( "rx_tar", $cmd, $cache, @ARGV );
+  system( "/usr/libexec/vfu/rx_tar", $cmd, $cache, @ARGV );
   }
 else
   {

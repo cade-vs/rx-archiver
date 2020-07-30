@@ -20,6 +20,8 @@ my $archive = shift @ARGV;
 my $cache = "/tmp/$archive.rx.cache";
 $cache =~ s/^(\/tmp\/)(.+)\/([^\/]+)$/$1$3/;
 
+umask oct(077);
+
 if ( $cmd eq "l" || $cmd eq "v" )
    {
    my $dir = shift @ARGV;
@@ -27,12 +29,11 @@ if ( $cmd eq "l" || $cmd eq "v" )
    if( ! -e $cache )
      {
      # cache not found--fill it
-     system( "tar tvf   \"$archive\"             > \"$cache\"" ) if $archive =~ /\.tar$/i;
-     system( "gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tar\.g?z(\.rx\.cache)?$/i;
-     system( "gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tgz$/i;
-     system( "xz    -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.txz$/i;
-     system( "bzip2 -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tar\.bz2?$/i;
-     chmod oct(600), $cache; # a bit late but still... :)
+     system( "umask 0077; tar tvf   \"$archive\"             > \"$cache\"" ) if $archive =~ /\.tar$/i;
+     system( "umask 0077; gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tar\.g?z(\.rx\.cache)?$/i;
+     system( "umask 0077; gzip  -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tgz$/i;
+     system( "umask 0077; xz    -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /(\.txz|\.tar\.xz(\.rx\.cache)?)$/i;
+     system( "umask 0077; bzip2 -dc \"$archive\" | tar tvf - > \"$cache\"" ) if $archive =~ /\.tar\.bz2?$/i;
      }
    else
      {
